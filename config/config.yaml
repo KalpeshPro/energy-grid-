@@ -1,0 +1,35 @@
+project:
+  name: GridSight India — Energy Demand Forecasting
+  version: 1.0.0
+
+paths:
+  raw_data: data/raw/energy_data.csv
+  processed_data: data/processed/energy_processed.csv
+  model_output: models/model.pkl
+
+model:
+  algorithm: LinearRegression
+  test_size: 0.2
+  random_state: 42
+  fourier_harmonics: 2
+  gradient_descent:
+    learning_rate: 1.0e-7
+    iterations: 2000
+
+features:
+  - trend
+  - sin_1
+  - cos_1
+  - temperature_index
+  - gdp_index
+
+target: peak_demand_mw
+
+forecast:
+  horizon_months: 24
+  confidence_interval: 0.06
+
+flask:
+  host: 0.0.0.0
+  port: 5000
+  debug: true

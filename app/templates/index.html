@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridSight India — Energy Demand Forecasting</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-icon">⚡</div>
+    GridSight
+  </a>
+  <ul class="nav-links">
+    <li><a href="#forecast">Forecast</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a href="#regions">Regions</a></li>
+    <li><a href="#model">Model</a></li>
+    <li><a href="#insights">Insights</a></li>
+  </ul>
+  <a href="#model" class="nav-cta">Run Model</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-eyebrow">India Energy Intelligence Platform · Est. 2025</div>
+
+  <h1 class="hero-title">
+    Future<br>
+    <span class="accent">Energy.</span><br>
+    <span class="outline">Predicted.</span>
+  </h1>
+
+  <p class="hero-sub">
+    ML-powered demand forecasting for India's national grid — 24 months ahead,
+    disaggregated by region and source, updated daily.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#forecast" class="btn-primary">View Forecasts →</a>
+    <a href="#model" class="btn-secondary">[ Explore the Model ]</a>
+  </div>
+
+  <div class="demand-visual">
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring"></div>
+    <div class="pulse-center">⚡</div>
+  </div>
+
+  <div class="hero-ticker">
+    <div class="ticker-item"><span>CURRENT DEMAND</span><span class="ticker-value" id="liveDemand">187,420 MW</span></div>
+    <div class="ticker-item"><span>NEXT MONTH FORECAST</span><span class="ticker-value">193,800 MW</span></div>
+    <div class="ticker-item"><span>RENEWABLE SHARE</span><span class="ticker-value ticker-up">26.3% ▲</span></div>
+    <div class="ticker-item"><span>GRID FREQUENCY</span><span class="ticker-value">49.98 Hz</span></div>
+    <div class="ticker-item"><span>PEAK TODAY</span><span class="ticker-value">201,640 MW</span></div>
+    <div class="ticker-item"><span>MODEL ACCURACY</span><span class="ticker-value ticker-up">96.8% R²</span></div>
+  </div>
+</section>
+
+<!-- ══ LIVE STATS ══ -->
+<div id="live-stats">
+  <div class="stats-grid">
+    <div class="stat-block fade-up">
+      <div class="stat-label">Peak Demand 2024</div>
+      <div class="stat-value">243<span class="stat-unit">GW</span></div>
+      <div class="stat-delta delta-up">▲ 4.8% vs 2023</div>
+    </div>
+    <div class="stat-block fade-up d1">
+      <div class="stat-label">Installed Capacity</div>
+      <div class="stat-value">950<span class="stat-unit">GW</span></div>
+      <div class="stat-delta delta-up">▲ 12.1% YoY</div>
+    </div>
+    <div class="stat-block fade-up d2">
+      <div class="stat-label">Renewables 2030 Target</div>
+      <div class="stat-value">500<span class="stat-unit">GW</span></div>
+      <div class="stat-delta delta-up">62% progress</div>
+    </div>
+    <div class="stat-block fade-up d3">
+      <div class="stat-label">Forecast Horizon</div>
+      <div class="stat-value">24<span class="stat-unit">mo</span></div>
+      <div class="stat-delta" style="color:var(--teal)">±6% confidence</div>
+    </div>
+    <div class="stat-block fade-up">
+      <div class="stat-label">States Covered</div>
+      <div class="stat-value">28<span class="stat-unit">+8</span></div>
+      <div class="stat-delta" style="color:var(--muted)">All regions</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FORECAST SECTION ══ -->
+<section id="forecast">
+  <div class="section-label">ML Forecast</div>
+  <h2 class="section-title fade-up">Future Demand<br>Projections</h2>
+  <p class="section-desc fade-up d1">24-month ahead forecasts generated via multivariate regression with Fourier seasonality decomposition.</p>
+
+  <div class="year-toggles fade-up d2">
+    <button class="yr-btn active" onclick="switchForecastYear(2025, this)">2025</button>
+    <button class="yr-btn" onclick="switchForecastYear(2026, this)">2026</button>
+  </div>
+
+  <div class="forecast-layout fade-up d2">
+    <div class="chart-card">
+      <div class="chart-title">Monthly Demand Forecast</div>
+      <div class="chart-subtitle">Historical + Predicted · MW · Confidence Interval Shown</div>
+      <canvas id="forecastChart" height="320"></canvas>
+    </div>
+    <div class="forecast-sidebar" id="forecastSidebar"></div>
+  </div>
+
+  <div style="margin-top:24px" class="fade-up">
+    <div class="chart-card">
+      <div class="chart-title">Year-Over-Year Demand Growth</div>
+      <div class="chart-subtitle">Annual Peak Demand · 2015–2026 · GW</div>
+      <canvas id="yoyChart" height="180"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ENERGY SOURCES ══ -->
+<section id="sources">
+  <div class="section-label">Energy Mix</div>
+  <h2 class="section-title fade-up">Generation<br>Sources</h2>
+  <p class="section-desc fade-up d1">India's evolving energy portfolio — shifting from coal dominance toward a renewable-led future grid.</p>
+  <div class="sources-grid fade-up d2" id="sourcesGrid"></div>
+  <div style="margin-top:32px" class="fade-up">
+    <div class="chart-card">
+      <div class="chart-title">Energy Mix Forecast — 2025 to 2030</div>
+      <div class="chart-subtitle">Projected share evolution · % of total generation</div>
+      <canvas id="mixChart" height="220"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══ REGIONS ══ -->
+<section id="regions">
+  <div class="section-label">Regional Analysis</div>
+  <h2 class="section-title fade-up">Demand by<br>Region</h2>
+  <div class="regions-layout fade-up d1">
+    <div class="india-map">
+      <div class="map-region active" id="rNorth"     onclick="selectRegion('North')"><span class="rname">NORTH</span><span class="rval">316 GW</span></div>
+      <div class="map-region"        id="rEast"      onclick="selectRegion('East')"><span class="rname">EAST</span><span class="rval">218 GW</span></div>
+      <div class="map-region"        id="rWest"      onclick="selectRegion('West')"><span class="rname">WEST</span><span class="rval">304 GW</span></div>
+      <div class="map-region"        id="rSouth"     onclick="selectRegion('South')"><span class="rname">SOUTH</span><span class="rval">292 GW</span></div>
+      <div class="map-region"        id="rNE"        onclick="selectRegion('Northeast')"><span class="rname">NE</span><span class="rval">73 GW</span></div>
+    </div>
+    <div class="region-detail" id="regionDetail"></div>
+  </div>
+  <div style="margin-top:32px" class="fade-up">
+    <div class="chart-card">
+      <div class="chart-title">Regional Demand Forecast — 2025–2026</div>
+      <div class="chart-subtitle">Monthly GW by region · Model predictions</div>
+      <canvas id="regionalChart" height="220"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MODEL ══ -->
+<section id="model">
+  <div class="section-label">ML Architecture</div>
+  <h2 class="section-title fade-up">The Model</h2>
+  <p class="section-desc fade-up d1">Multivariate regression with seasonal Fourier terms — trained on 10 years of CEA data. Click below to run live training.</p>
+
+  <div class="model-grid fade-up d2">
+    <div class="model-spec">
+      <div class="chart-title" style="margin-bottom:20px">Model Specifications</div>
+      <div class="spec-row"><span class="spec-key">Algorithm</span><span class="spec-val">Multiple Linear Regression</span></div>
+      <div class="spec-row"><span class="spec-key">Features</span><span class="spec-val">Trend, sin(2πm/12), cos(2πm/12), Temperature, GDP Index</span></div>
+      <div class="spec-row"><span class="spec-key">Training Period</span><span class="spec-val highlight">2015–2024 (120 months)</span></div>
+      <div class="spec-row"><span class="spec-key">Optimization</span><span class="spec-val">Gradient Descent (lr=1e-7, 2000 iters)</span></div>
+      <div class="spec-row"><span class="spec-key">Validation</span><span class="spec-val">Walk-forward CV, 80/20 split</span></div>
+      <div class="spec-row"><span class="spec-key">Target</span><span class="spec-val highlight">Monthly peak demand (MW)</span></div>
+      <div class="spec-row"><span class="spec-key">Seasonality</span><span class="spec-val">Annual Fourier (2 harmonics)</span></div>
+      <div class="spec-row"><span class="spec-key">Data Source</span><span class="spec-val">CEA / NLDC / IMD proxy</span></div>
+      <div class="spec-row"><span class="spec-key">Next Steps</span><span class="spec-val">LSTM, XGBoost, Prophet ensemble</span></div>
+    </div>
+
+    <div class="train-viz">
+      <div class="chart-title">Live Training Console</div>
+      <button class="train-btn" id="trainBtn" onclick="runTraining()">▶ Train Model Now</button>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Training Progress</span><span id="progPct">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-box"><div class="metric-label">R² Score</div><div class="metric-val" id="r2val">—</div></div>
+        <div class="metric-box"><div class="metric-label">RMSE</div><div class="metric-val" id="rmseval">—</div></div>
+        <div class="metric-box"><div class="metric-label">MAPE</div><div class="metric-val" id="mapeval">—</div></div>
+        <div class="metric-box"><div class="metric-label">Samples</div><div class="metric-val">120</div></div>
+      </div>
+      <div class="train-log" id="trainLog">
+        <span class="log-warn">[GRIDSIGHT] Model console initialized.</span><br>
+        Click "Train Model Now" to begin...<br>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px" class="fade-up">
+    <div class="chart-card">
+      <div class="chart-title">Model Residuals — Actual vs Predicted</div>
+      <div class="chart-subtitle">Last 24 training months · Overlay comparison</div>
+      <canvas id="residualChart" height="180"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ══ INSIGHTS ══ -->
+<section id="insights">
+  <div class="section-label">Key Insights</div>
+  <h2 class="section-title fade-up">What the Data<br>Tells Us</h2>
+  <div class="insights-grid fade-up d1">
+    <div class="insight-card" style="--ic-color:#f59e0b">
+      <span class="ic-icon">📈</span><div class="ic-tag">Growth</div>
+      <h3 class="ic-title">5.1% Annual Demand Rise</h3>
+      <p class="ic-body">India's electricity consumption grows steadily at ~5% per year, driven by urbanisation, industrial expansion, and rising living standards across Tier-2 and Tier-3 cities.</p>
+    </div>
+    <div class="insight-card" style="--ic-color:#4ade80">
+      <span class="ic-icon">☀️</span><div class="ic-tag">Renewables</div>
+      <h3 class="ic-title">Solar on Track for 37% by 2030</h3>
+      <p class="ic-body">India's solar installation pace outpaces government targets. By 2026, renewables are forecast to cover 34% of total generation — displacing coal faster than expected.</p>
+    </div>
+    <div class="insight-card" style="--ic-color:#38bdf8">
+      <span class="ic-icon">🌡️</span><div class="ic-tag">Climate</div>
+      <h3 class="ic-title">Summer Peaks Are Intensifying</h3>
+      <p class="ic-body">April–June demand spikes correlate tightly with temperature anomalies. Model sensitivity shows 1°C above normal adds ~3,200 MW to peak load.</p>
+    </div>
+    <div class="insight-card" style="--ic-color:#a78bfa">
+      <span class="ic-icon">⚡</span><div class="ic-tag">Grid</div>
+      <h3 class="ic-title">North & West Drive National Growth</h3>
+      <p class="ic-body">Northern and Western regions account for 55% of forecast demand growth through 2026, with industrial corridors in UP, Gujarat, and Maharashtra as primary drivers.</p>
+    </div>
+    <div class="insight-card" style="--ic-color:#f97316">
+      <span class="ic-icon">🏭</span><div class="ic-tag">Industry</div>
+      <h3 class="ic-title">Peak Hours Shifting with EVs</h3>
+      <p class="ic-body">Electric vehicle adoption is reshaping evening peak demand profiles. By 2026, the 9–11 PM EV charging load could add 8–12 GW to nightly grid requirements.</p>
+    </div>
+    <div class="insight-card" style="--ic-color:#14b8a6">
+      <span class="ic-icon">🔋</span><div class="ic-tag">Storage</div>
+      <h3 class="ic-title">Storage Becomes Critical by 2026</h3>
+      <p class="ic-body">As renewable share crosses 30%, grid-scale storage becomes essential. Battery capacity needs to triple from current 1.2 GW to handle variability.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div style="display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:14px;">
+        <div class="logo-icon">⚡</div> GridSight
+      </div>
+      <p>India's open energy intelligence platform. ML-powered forecasting for a cleaner, smarter national grid.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Platform</h4>
+      <ul>
+        <li><a href="#forecast">Demand Forecast</a></li>
+        <li><a href="#sources">Energy Sources</a></li>
+        <li><a href="#regions">Regional View</a></li>
+        <li><a href="#model">ML Model</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Data Sources</h4>
+      <ul>
+        <li><a href="#">CEA — Central Electricity Authority</a></li>
+        <li><a href="#">NLDC — National Load Dispatch</a></li>
+        <li><a href="#">IMD — Meteorological Data</a></li>
+        <li><a href="#">MNRE — Renewables Ministry</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 GridSight India · Data is illustrative / educational</span>
+    <span style="color:var(--teal)">Built with ML · Powered by India's energy transition</span>
+  </div>
+</footer>
+
+<!-- Chart.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Our app JS -->
+<script type="module" src="/static/js/app.js"></script>
+
+</body>
+</html>
